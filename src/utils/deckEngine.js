@@ -187,3 +187,121 @@ export function getComboDescription(combo) {
   if (!blade || !ratchet || !bit) return '';
   return `${blade.name} ${ratchet.name} ${bit.name}`;
 }
+
+// 發射方式建議系統
+export function getLaunchAdvice(combo) {
+  const blade = getPartById(combo.blade);
+  const ratchet = getPartById(combo.ratchet);
+  const bit = getPartById(combo.bit);
+  if (!blade || !ratchet || !bit) return null;
+
+  const isAttackBit = ['b-low-rush','b-rush','b-kick','b-trans-kick','b-rubber-accel','b-gear-flat','b-flat','b-low-flat','b-accel','b-gear-rush'].includes(bit.id);
+  const isStaminaBit = ['b-ball','b-free-ball','b-glide','b-unite','b-high-taper','b-metal-needle','b-needle','b-orb','b-taper','b-dot','b-point'].includes(bit.id);
+  const isDefenseBit = ['b-hexa','b-bound-spike','b-spike'].includes(bit.id);
+  const isBalanceBit = ['b-elevate','b-level'].includes(bit.id);
+  const isLeftSpin = blade.spin === '左旋';
+  const isLowHeight = ratchet.height <= 55;
+  const isHighHeight = ratchet.height >= 75;
+
+  let power = ''; // 力道
+  let angle = ''; // 角度
+  let timing = ''; // 時機
+  let technique = ''; // 技巧名稱
+  let detail = ''; // 詳細說明
+  let emoji = '';
+
+  if (isAttackBit) {
+    if (bit.id === 'b-low-rush' || bit.id === 'b-rush' || bit.id === 'b-gear-rush') {
+      power = '💪 全力 (90-100%)';
+      angle = '📐 水平平射 (0°)';
+      timing = '⏱️ 倒數同時發射，搶先觸發 X-Dash';
+      technique = '滿力平射 (Full Power Flat Shot)';
+      detail = isLowHeight
+        ? '超低棘輪搭配衝刺軸心，平射後陀螺會貼地高速移動，利用上掀力從對手下方擊飛。發射瞬間手腕快速向內翻轉增加初速。'
+        : '標準攻擊發射，全力拉繩讓軸心立刻接觸 X-Celerator 軌道觸發 Xtreme Dash，追求首次接觸就 KO。';
+      emoji = '🔥';
+    } else if (bit.id === 'b-kick' || bit.id === 'b-trans-kick') {
+      power = '💪 強力 (80-90%)';
+      angle = '📐 微傾斜射 (5-10°)';
+      timing = '⏱️ 略慢於對手 0.5 秒，利用踢擊軌道反擊';
+      technique = '延遲踢射 (Delayed Kick Shot)';
+      detail = 'Kick 軸心的不規則移動是雙面刃。微傾角度發射讓陀螺先穩定 1-2 圈再觸發踢擊軌道，能更精準地撞擊已穩定的對手。';
+      emoji = '🦶';
+    } else if (bit.id === 'b-rubber-accel') {
+      power = '💪 強力 (85-95%)';
+      angle = '📐 水平平射 (0°)';
+      timing = '⏱️ 與對手同步發射';
+      technique = '橡膠加速射 (Rubber Accel Shot)';
+      detail = '橡膠材質提供額外抓地力，平射後會有爆發性的加速效果。發射力道要足夠但不要過猛，讓橡膠軸心能穩定抓住場地面。';
+      emoji = '⚡';
+    } else {
+      power = '💪 強力 (80-90%)';
+      angle = '📐 水平平射 (0°)';
+      timing = '⏱️ 標準時機';
+      technique = '標準攻擊射 (Standard Attack Shot)';
+      detail = '保持水平角度全力發射，讓攻擊型軸心發揮最大移動速度。注意控制發射方向，避免初始軌道偏離中心。';
+      emoji = '⚔️';
+    }
+  } else if (isDefenseBit) {
+    power = '🤚 中等 (50-65%)';
+    angle = '📐 傾斜發射 (15-25°)';
+    timing = '⏱️ 略早於對手發射，搶佔中心位置';
+    technique = '傾斜定位射 (Tilt Position Shot)';
+    detail = bit.id === 'b-hexa'
+      ? 'Hexa 六角軸心的制動效果在傾斜發射時最有效。以 15-20° 角度發射，讓陀螺落地時微晃 → Hexa 的六角面會立刻產生制動力 → 陀螺快速穩定在場地中心。過度用力反而會降低穩定性。'
+      : '防禦型軸心需要穩定而非速度。中等力道傾斜發射，讓陀螺在場地中心建立防禦陣地，等待對手撞上來。';
+    emoji = '🛡️';
+  } else if (isStaminaBit) {
+    if (bit.id === 'b-free-ball') {
+      power = '🤚 中等偏弱 (40-55%)';
+      angle = '📐 垂直下壓 (30-45°)';
+      timing = '⏱️ 可略晚發射，持久戰不急';
+      technique = '柔力下壓射 (Soft Drop Shot)';
+      detail = 'Free Ball 的自由滾動特性在低速時表現最佳。大角度下壓發射讓陀螺從高處穩定落入場地中心，自由球會自動找到最穩定的旋轉位置。切忌全力發射，會導致陀螺失控亂跑。';
+      emoji = '🎱';
+    } else {
+      power = '🤚 中等 (45-60%)';
+      angle = '📐 傾斜發射 (10-20°)';
+      timing = '⏱️ 標準時機，保持穩定';
+      technique = '穩定持久射 (Stable Stamina Shot)';
+      detail = '持久型配置的發射核心是「穩」而非「猛」。適當的傾斜角度讓陀螺快速穩定，中等力道確保旋轉時間最長。發射時保持手腕穩定，避免左右晃動。';
+      emoji = '🔄';
+    }
+  } else if (isBalanceBit) {
+    if (bit.id === 'b-elevate') {
+      power = isLeftSpin ? '💪 中強 (65-80%)' : '💪 強力 (75-85%)';
+      angle = '📐 微傾斜射 (5-15°)';
+      timing = '⏱️ 與對手同步或略晚';
+      technique = isLeftSpin ? '左旋升降射 (L-Spin Elevate Shot)' : '升降攻擊射 (Elevate Attack Shot)';
+      detail = isLeftSpin
+        ? 'Elevate 搭配左旋刃是同化型戰術。中強力道讓 Elevate 的彎曲齒輪產生升降軌道，前期主動接觸對手吸收旋轉力，後期靠剩餘旋轉力取勝。發射角度不宜太大，保持接觸頻率。'
+        : 'Elevate 的升降效果在右旋時增加打擊面高度變化，讓對手難以預測接觸點。';
+      emoji = '↕️';
+    } else if (bit.id === 'b-level') {
+      power = isLeftSpin ? '💪 中強 (60-75%)' : '💪 強力 (70-85%)';
+      angle = '📐 斜射 (10-20°)';
+      timing = isLeftSpin ? '⏱️ 略晚 0.5-1 秒，後發制人' : '⏱️ 標準時機';
+      technique = isLeftSpin ? '左旋變速射 (L-Spin Variable Shot)' : '雙模式射 (Dual Mode Shot)';
+      detail = isLeftSpin
+        ? 'Level 搭配左旋的精髓是「前攻後守」。中強力道斜射讓前期有足夠速度主動出擊，當速度下降後 Level 自動切換為持久模式，利用左旋優勢吸收對手殘餘旋轉。略晚發射可以讓對手先消耗。'
+        : 'Level 的雙模式特性：前期高速 X-Dash 攻擊，後期自動轉為持久。斜射讓兩個模式都能發揮效果。';
+      emoji = '🔀';
+    }
+  }
+
+  // 特殊配置修正
+  if (isLeftSpin && !isBalanceBit) {
+    technique = '左旋 ' + technique;
+    detail += ' ⬅️ 左旋注意：發射方向與右旋相反，需要特別練習拉繩/發射器的反向操作。';
+  }
+
+  if (isLowHeight && isAttackBit) {
+    detail += ' 📏 超低棘輪加成：低重心讓接觸點低於對手，產生「上掀力」效果更佳。';
+  }
+
+  if (isHighHeight) {
+    detail += ' 📏 高棘輪注意：重心較高容易頭重腳輕，發射時務必保持水平穩定。';
+  }
+
+  return { power, angle, timing, technique, detail, emoji };
+}

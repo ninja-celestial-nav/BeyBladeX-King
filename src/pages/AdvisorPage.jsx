@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Sparkles, ArrowRight, Zap } from 'lucide-react';
 import useInventoryStore from '../store/useInventoryStore';
-import { generateRecommendations, getMatchupAnalysis, getComboDescription } from '../utils/deckEngine';
+import { generateRecommendations, getMatchupAnalysis, getComboDescription, getLaunchAdvice } from '../utils/deckEngine';
 import { getPartById, TIER_COLORS } from '../data/partsDatabase';
 
 const ROLE_ICONS = { '先鋒': '🔰', '中堅': '🔄', '大將': '👑' };
@@ -113,7 +113,7 @@ export default function AdvisorPage() {
                       const ratchet = getPartById(c.ratchet);
                       const bit = getPartById(c.bit);
                       return (
-                        <div key={ci} style={{ marginBottom: 10, padding: '10px 14px', background: 'var(--bg-glass)', borderRadius: 10 }}>
+                        <div key={ci} style={{ marginBottom: 14, padding: '12px 14px', background: 'var(--bg-glass)', borderRadius: 10 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                             <span style={{ fontSize: 16 }}>{ROLE_ICONS[c.role]}</span>
                             <span style={{ fontFamily: 'Orbitron', fontWeight: 700, fontSize: 13 }}>
@@ -128,10 +128,21 @@ export default function AdvisorPage() {
                             <span style={{ fontSize: 11, color: 'var(--text-secondary)', marginLeft: 'auto' }}>{c.role}</span>
                           </div>
                           {c.synergy && (
-                            <div style={{ fontSize: 11, color: 'var(--accent-gold)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <div style={{ fontSize: 11, color: 'var(--accent-gold)', display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
                               <Sparkles size={12} /> 協同加成: {c.synergy.note} (+{c.synergy.bonus * 2})
                             </div>
                           )}
+                          {(() => { const la = getLaunchAdvice(c); return la ? (
+                            <div style={{ marginTop: 8, padding: '10px 12px', background: 'rgba(255,215,0,0.04)', border: '1px solid rgba(255,215,0,0.12)', borderRadius: 8 }}>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent-gold)', marginBottom: 6 }}>{la.emoji} 發射建議：{la.technique}</div>
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 12px', fontSize: 11, color: 'var(--text-secondary)' }}>
+                                <span>{la.power}</span>
+                                <span>{la.angle}</span>
+                                <span style={{ gridColumn: '1/-1' }}>{la.timing}</span>
+                              </div>
+                              <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.5, borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 6 }}>{la.detail}</div>
+                            </div>
+                          ) : null; })()}
                         </div>
                       );
                     })}

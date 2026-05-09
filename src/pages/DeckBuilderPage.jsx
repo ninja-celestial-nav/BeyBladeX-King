@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { RotateCcw, Save, CheckCircle, AlertTriangle, Shield, Swords, RefreshCw } from 'lucide-react';
 import useInventoryStore from '../store/useInventoryStore';
 import { BLADES, RATCHETS, BITS, getPartById, TIER_COLORS } from '../data/partsDatabase';
+import { getLaunchAdvice } from '../utils/deckEngine';
 
 const ROLES = ['先鋒', '中堅', '大將'];
 const ROLE_ICONS = { '先鋒': '🔰', '中堅': '🔄', '大將': '👑' };
@@ -96,6 +97,18 @@ export default function DeckBuilderPage() {
                     {blade?.name || '?'} {ratchet?.name || '?'} {bit?.abbr || '?'}
                   </div>
                   {blade && <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{blade.type} • {blade.spin} • {blade.system}</div>}
+                  {blade && ratchet && bit && (() => {
+                    const la = getLaunchAdvice({ blade: slot.blade, ratchet: slot.ratchet, bit: slot.bit });
+                    return la ? (
+                      <div style={{ marginTop: 8, padding: '8px 10px', background: 'rgba(255,215,0,0.04)', border: '1px solid rgba(255,215,0,0.12)', borderRadius: 8 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-gold)', marginBottom: 4 }}>{la.emoji} {la.technique}</div>
+                        <div style={{ fontSize: 10, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                          {la.power}<br/>{la.angle}<br/>{la.timing}
+                        </div>
+                        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.4 }}>{la.detail}</div>
+                      </div>
+                    ) : null;
+                  })()}
                   <button className="btn btn-danger" style={{ marginTop: 8, padding: '4px 12px', fontSize: 11 }} onClick={() => clearSlot(slotKey)}>清除</button>
                 </div>
               )}
