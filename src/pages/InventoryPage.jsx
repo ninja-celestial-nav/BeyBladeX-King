@@ -32,7 +32,7 @@ export default function InventoryPage() {
   const currentTab = TABS.find(t => t.id === tab);
   const filtered = ownedParts
     .filter(p => currentTab.types.includes(p.partType))
-    .filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()));
+    .filter(p => !search || [p.name, p.nameJP, p.nameCN, p.code, p.abbr].some(v => v && v.toLowerCase().includes(search.toLowerCase())));
 
   const stats = {
     total: Object.values(inventory).reduce((a, b) => a + b, 0),
@@ -96,9 +96,9 @@ export default function InventoryPage() {
           {filtered.map(p => (
             <div className="part-card" key={p.id}>
               <span style={{ fontSize: '20px' }}>{TYPE_ICONS[p.type] || '⚙️'}</span>
-              <div>
-                <div className="part-name">{p.name}</div>
-                <div className="part-sub">{p.nameJP || p.system || ''} {p.spin ? `• ${p.spin}` : ''}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="part-name">{p.name} <span style={{ color: 'var(--accent-cyan)', fontWeight: 400 }}>{p.nameJP || p.nameCN || ''}</span></div>
+                <div className="part-sub">{p.code || p.system || ''} {p.spin ? `• ${p.spin}` : ''} {p.abbr ? `(${p.abbr})` : ''}</div>
               </div>
               <span className="tier-badge" style={{
                 background: `${TIER_COLORS[p.tier]}22`,
@@ -143,7 +143,7 @@ function AddPartModal({ allParts, inventory, onAdd, onClose }) {
 
   const results = allParts
     .filter(p => filterType === 'all' || p.partType === filterType)
-    .filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()))
+    .filter(p => !search || [p.name, p.nameJP, p.nameCN, p.code, p.abbr].some(v => v && v.toLowerCase().includes(search.toLowerCase())))
     .slice(0, 50);
 
   return (
@@ -173,9 +173,9 @@ function AddPartModal({ allParts, inventory, onAdd, onClose }) {
             return (
               <div className="part-card" key={p.id} onClick={() => onAdd(p.id)}>
                 <span style={{ fontSize: 18 }}>{TYPE_ICONS[p.type] || '⚙️'}</span>
-                <div>
-                  <div className="part-name">{p.name}</div>
-                  <div className="part-sub">{p.partType === 'blade' ? (p.system + ' • ' + (p.spin || '')) : p.type || ''}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="part-name">{p.name} <span style={{ color: 'var(--accent-cyan)', fontWeight: 400, fontSize: 12 }}>{p.nameJP || p.nameCN || ''}</span></div>
+                  <div className="part-sub">{p.code || ''} {p.partType === 'blade' ? `• ${p.system} • ${p.spin || ''}` : ''} {p.abbr ? `(${p.abbr})` : ''}</div>
                 </div>
                 <span className="tier-badge" style={{
                   background: `${TIER_COLORS[p.tier]}22`,
