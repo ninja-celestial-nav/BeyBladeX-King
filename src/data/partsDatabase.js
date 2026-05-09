@@ -16,11 +16,11 @@ export const TIERS = ['T0', 'T0.5', 'T1', 'T2', 'T3'];
 export const BLADES = [
   // UX T0
   { id: 'wizard-rod', name: 'Wizard Rod', nameJP: '杖之魔術師', system: 'UX', type: '持久', spin: '右旋', tier: 'T0', code: 'UX-03' },
-  { id: 'shark-scale', name: 'Shark Scale', nameJP: '鮫之鱗', system: 'UX', type: '攻擊', spin: '右旋', tier: 'T0', code: 'UX' },
-  { id: 'cobalt-dragoon', name: 'Cobalt Dragoon', nameJP: '鈷藍龍騎', system: 'UX', type: '攻擊', spin: '左旋', tier: 'T0', code: 'UX' },
+  { id: 'shark-scale', name: 'Shark Scale', nameJP: '鯊之鱗', system: 'UX', type: '攻擊', spin: '右旋', tier: 'T0', code: 'UX-15' },
+  { id: 'cobalt-dragoon', name: 'Cobalt Dragoon', nameJP: '鈷藍龍騎', system: 'UX', type: '攻擊', spin: '左旋', tier: 'T0', code: 'UX-10' },
   { id: 'meteor-dragoon', name: 'Meteor Dragoon', nameJP: '流星龍騎', system: 'UX', type: '攻擊', spin: '左旋', tier: 'T0', code: 'UX-17' },
   // UX T0.5
-  { id: 'hover-wyvern', name: 'Hover Wyvern', nameJP: '懸浮飛龍', system: 'UX', type: '攻擊', spin: '右旋', tier: 'T0.5', code: 'UX' },
+  { id: 'hover-wyvern', name: 'Hover Wyvern', nameJP: '懸浮飛龍', system: 'UX', type: '攻擊', spin: '右旋', tier: 'T0.5', code: 'UX-20' },
   // UX T1
   { id: 'dran-buster-ux', name: 'Dran Buster', nameJP: '龍破', system: 'UX', type: '攻擊', spin: '右旋', tier: 'T1', code: 'UX-01' },
   { id: 'hells-hammer-ux', name: "Hell's Hammer", nameJP: '地獄之錘', system: 'UX', type: '攻擊', spin: '右旋', tier: 'T1', code: 'UX-02' },
@@ -42,18 +42,18 @@ export const BLADES = [
   // BX
   { id: 'dran-sword', name: 'Dran Sword', nameJP: '龍劍', system: 'BX', type: '攻擊', spin: '右旋', tier: 'T3', code: 'BX-01' },
   { id: 'hells-scythe', name: "Hell's Scythe", nameJP: '地獄鐮刀', system: 'BX', type: '平衡', spin: '右旋', tier: 'T2', code: 'BX-02' },
-  { id: 'knight-shield', name: 'Knight Shield', nameJP: '騎士盾', system: 'BX', type: '防禦', spin: '右旋', tier: 'T3', code: 'BX' },
-  { id: 'wizard-arrow', name: 'Wizard Arrow', nameJP: '魔箭', system: 'BX', type: '持久', spin: '右旋', tier: 'T2', code: 'BX' },
-  { id: 'viper-tail', name: 'Viper Tail', nameJP: '蛇尾', system: 'BX', type: '持久', spin: '右旋', tier: 'T3', code: 'BX' },
-  { id: 'leon-claw', name: 'Leon Claw', nameJP: '獅爪', system: 'BX', type: '平衡', spin: '右旋', tier: 'T3', code: 'BX' },
-  { id: 'phoenix-wing', name: 'Phoenix Wing', nameJP: '鳳翼', system: 'BX', type: '攻擊', spin: '右旋', tier: 'T2', code: 'BX' },
-  { id: 'shark-edge', name: 'Shark Edge', nameJP: '鯊刃', system: 'BX', type: '攻擊', spin: '右旋', tier: 'T2', code: 'BX' },
-  { id: 'tyranno-beat', name: 'Tyranno Beat', nameJP: '暴龍擊', system: 'BX', type: '攻擊', spin: '右旋', tier: 'T2', code: 'BX' },
-  { id: 'hells-chain', name: "Hell's Chain", nameJP: '地獄鏈', system: 'BX', type: '防禦', spin: '右旋', tier: 'T2', code: 'BX' },
-  { id: 'wyvern-gale', name: 'Wyvern Gale', nameJP: '飛龍風', system: 'BX', type: '持久', spin: '右旋', tier: 'T2', code: 'BX' },
-  { id: 'cobalt-drake', name: 'Cobalt Drake', nameJP: '鈷藍龍', system: 'BX', type: '攻擊', spin: '右旋', tier: 'T2', code: 'BX' },
-  { id: 'unicorn-sting', name: 'Unicorn Sting', nameJP: '獨角獸刺', system: 'BX', type: '平衡', spin: '右旋', tier: 'T3', code: 'BX' },
-  { id: 'sphinx-cowl', name: 'Sphinx Cowl', nameJP: '獅身人面', system: 'BX', type: '防禦', spin: '右旋', tier: 'T3', code: 'BX' },
+  { id: 'knight-shield', name: 'Knight Shield', nameJP: '騎士盾', system: 'BX', type: '防禦', spin: '右旋', tier: 'T3', code: 'BX-04' },
+  { id: 'wizard-arrow', name: 'Wizard Arrow', nameJP: '魔箭', system: 'BX', type: '持久', spin: '右旋', tier: 'T2', code: 'BX-05' },
+  { id: 'viper-tail', name: 'Viper Tail', nameJP: '蛇尾', system: 'BX', type: '持久', spin: '右旋', tier: 'T3', code: 'BX-06' },
+  { id: 'leon-claw', name: 'Leon Claw', nameJP: '獅爪', system: 'BX', type: '平衡', spin: '右旋', tier: 'T3', code: 'BX-07' },
+  { id: 'phoenix-wing', name: 'Phoenix Wing', nameJP: '鳳翼', system: 'BX', type: '攻擊', spin: '右旋', tier: 'T2', code: 'BX-08' },
+  { id: 'shark-edge', name: 'Shark Edge', nameJP: '鯊刃', system: 'BX', type: '攻擊', spin: '右旋', tier: 'T2', code: 'BX-09' },
+  { id: 'tyranno-beat', name: 'Tyranno Beat', nameJP: '暴龍擊', system: 'BX', type: '攻擊', spin: '右旋', tier: 'T2', code: 'BX-10' },
+  { id: 'hells-chain', name: "Hell's Chain", nameJP: '地獄鏈', system: 'BX', type: '防禦', spin: '右旋', tier: 'T2', code: 'BX-11' },
+  { id: 'wyvern-gale', name: 'Wyvern Gale', nameJP: '飛龍風', system: 'BX', type: '持久', spin: '右旋', tier: 'T2', code: 'BX-12' },
+  { id: 'cobalt-drake', name: 'Cobalt Drake', nameJP: '鈷藍龍', system: 'BX', type: '攻擊', spin: '右旋', tier: 'T2', code: 'BX-13' },
+  { id: 'unicorn-sting', name: 'Unicorn Sting', nameJP: '獨角獸刺', system: 'BX', type: '平衡', spin: '右旋', tier: 'T3', code: 'BX-14' },
+  { id: 'sphinx-cowl', name: 'Sphinx Cowl', nameJP: '獅身人面', system: 'BX', type: '防禦', spin: '右旋', tier: 'T3', code: 'BX-15' },
 ];
 
 export const RATCHETS = [
