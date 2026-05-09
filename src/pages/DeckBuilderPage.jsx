@@ -1,12 +1,24 @@
 import { useMemo } from 'react';
-import { RotateCcw, Save, CheckCircle, AlertTriangle, Shield, Swords, RefreshCw } from 'lucide-react';
+import { RotateCcw, Save, CheckCircle, AlertTriangle } from 'lucide-react';
 import useInventoryStore from '../store/useInventoryStore';
-import { BLADES, RATCHETS, BITS, getPartById, TIER_COLORS } from '../data/partsDatabase';
-import { getLaunchAdvice } from '../utils/deckEngine';
+import { BLADES, RATCHETS, BITS, getPartById, TIER_COLORS, getPartDisplayName } from '../data/partsDatabase';
+import { getLaunchAdvice, getMatchupAnalysis } from '../utils/deckEngine';
 
 const ROLES = ['先鋒', '中堅', '大將'];
 const ROLE_ICONS = { '先鋒': '🔰', '中堅': '🔄', '大將': '👑' };
 const ROLE_CLASS = { '先鋒': 'slot-vanguard', '中堅': 'slot-adaptable', '大將': 'slot-closer' };
+
+function PowerBar({ label, value, color }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
+      <span style={{ width: 32, color: 'var(--text-secondary)' }}>{label}</span>
+      <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+        <div style={{ width: `${value}%`, height: '100%', background: color, borderRadius: 3, transition: 'width 0.5s ease' }} />
+      </div>
+      <span style={{ width: 28, textAlign: 'right', fontFamily: 'Orbitron', fontSize: 10, color }}>{value}</span>
+    </div>
+  );
+}
 
 export default function DeckBuilderPage() {
   const { inventory, currentDeck, setSlotPart, setSlotRole, clearSlot, clearDeck, saveDeck, isDeckValid, getUsedParts, savedDecks, loadDeck, deleteSavedDeck } = useInventoryStore();
@@ -15,6 +27,10 @@ export default function DeckBuilderPage() {
   const ownedBlades = useMemo(() => BLADES.filter(b => (inventory[b.id] || 0) > 0), [inventory]);
   const ownedRatchets = useMemo(() => RATCHETS.filter(r => (inventory[r.id] || 0) > 0), [inventory]);
   const ownedBits = useMemo(() => BITS.filter(b => (inventory[b.id] || 0) > 0), [inventory]);
+
+  // 即時戰力計算
+  const allCombos = ['slot1','slot2','slot3'].map(k => currentDeck[k]).filter(s => s.blade && s.ratchet && s.bit);
+  const matchup = allCombos.length > 0 ? getMatchupAnalysis(allCombos) : null;
 
   const handleSave = () => {
     const name = prompt('為這套牌組命名：');
@@ -35,6 +51,18 @@ export default function DeckBuilderPage() {
         </div>
       )}
 
+      {matchup && (
+        <div style={{ marginBottom: 16, padding: '12px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-glass)', borderRadius: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-cyan)', marginBottom: 8 }}>📊 即時戰力分析</div>
+          <div style={{ display: 'grid', gap: 4 }}>
+            <PowerBar label="攻擊" value={matchup.attack} color="#ff416c" />
+            <PowerBar label="防禦" value={matchup.defense} color="#64b5f6" />
+            <PowerBar label="持久" value={matchup.stamina} color="#81c784" />
+            <PowerBar label="反制" value={matchup.counter} color="#f093fb" />
+          </div>
+        </div>
+      )}
+
       <div className="action-bar">
         <button className="btn btn-ghost" onClick={clearDeck}><RotateCcw size={16} /> 重置</button>
         {validation.isValid && <button className="btn btn-gold" onClick={handleSave}><Save size={16} /> 儲存牌組</button>}
@@ -52,11 +80,8 @@ export default function DeckBuilderPage() {
             <div className={`bey-slot ${ROLE_CLASS[slot.role]}`} key={slotKey}>
               <h3>
                 {ROLE_ICONS[slot.role]} {slot.role}
-                <select
-                  value={slot.role}
-                  onChange={e => setSlotRole(slotKey, e.target.value)}
-                  style={{ marginLeft: 'auto', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-glass)', borderRadius: 6, padding: '4px 8px', fontSize: 11, cursor: 'pointer' }}
-                >
+                <select value={slot.role} onChange={e => setSlotRole(slotKey, e.target.value)}
+                  style={{ marginLeft: 'auto', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-glass)', borderRadius: 6, padding: '4px 8px', fontSize: 11, cursor: 'pointer' }}>
                   {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </h3>
@@ -65,8 +90,8 @@ export default function DeckBuilderPage() {
               <select className="slot-select" value={slot.blade || ''} onChange={e => setSlotPart(slotKey, 'blade', e.target.value || null)}>
                 <option value="">-- 選擇之刃 --</option>
                 {ownedBlades.map(b => (
-                  <option key={b.id} value={b.id} disabled={usedParts.has(b.id)}>
-                    {b.name} [{b.tier}] {b.spin === '左旋' ? '⬅️' : ''} {usedParts.has(b.id) ? '🔒' : ''}
+                  <option key={b.id} value={b.id} disabled={usedParts.has(b.id)} style={usedParts.has(b.id) ? {color:'#666'} : {}}>
+                    {b.name} {b.nameJP||''} [{b.tier}] {b.spin === '左旋' ? '⬅️' : ''} {usedParts.has(b.id) ? '⚠️已使用' : ''}
                   </option>
                 ))}
               </select>
@@ -75,8 +100,8 @@ export default function DeckBuilderPage() {
               <select className="slot-select" value={slot.ratchet || ''} onChange={e => setSlotPart(slotKey, 'ratchet', e.target.value || null)}>
                 <option value="">-- 選擇棘輪 --</option>
                 {ownedRatchets.map(r => (
-                  <option key={r.id} value={r.id} disabled={usedParts.has(r.id)}>
-                    {r.name} [{r.tier}] {usedParts.has(r.id) ? '🔒' : ''}
+                  <option key={r.id} value={r.id} disabled={usedParts.has(r.id)} style={usedParts.has(r.id) ? {color:'#666'} : {}}>
+                    {r.name} {r.nameCN||''} [{r.tier}] {usedParts.has(r.id) ? '⚠️已使用' : ''}
                   </option>
                 ))}
               </select>
@@ -85,8 +110,8 @@ export default function DeckBuilderPage() {
               <select className="slot-select" value={slot.bit || ''} onChange={e => setSlotPart(slotKey, 'bit', e.target.value || null)}>
                 <option value="">-- 選擇軸心 --</option>
                 {ownedBits.map(b => (
-                  <option key={b.id} value={b.id} disabled={usedParts.has(b.id)}>
-                    {b.name} ({b.abbr}) [{b.tier}] {usedParts.has(b.id) ? '🔒' : ''}
+                  <option key={b.id} value={b.id} disabled={usedParts.has(b.id)} style={usedParts.has(b.id) ? {color:'#666'} : {}}>
+                    {b.name} {b.nameCN||''} ({b.abbr}) [{b.tier}] {usedParts.has(b.id) ? '⚠️已使用' : ''}
                   </option>
                 ))}
               </select>

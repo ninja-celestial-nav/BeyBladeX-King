@@ -202,20 +202,37 @@ export const CX_ASSIST_BLADES = [
   { id: 'ab-zillion', name: 'Zillion', nameCN: '無數', code: 'AB-Zi', tier: 'T2', type: '攻擊' },
 ];
 
-// Helper: get all parts in flat list
+// === 模組級快取（避免每次呼叫重建陣列）===
+let _allPartsCache = null;
+let _partByIdMap = null;
+
 export function getAllParts() {
-  return [
-    ...BLADES.map(p => ({ ...p, partType: PART_TYPES.BLADE })),
-    ...RATCHETS.map(p => ({ ...p, partType: PART_TYPES.RATCHET })),
-    ...BITS.map(p => ({ ...p, partType: PART_TYPES.BIT })),
-    ...CX_LOCK_CHIPS.map(p => ({ ...p, partType: PART_TYPES.LOCK_CHIP })),
-    ...CX_MAIN_BLADES.map(p => ({ ...p, partType: PART_TYPES.MAIN_BLADE })),
-    ...CX_ASSIST_BLADES.map(p => ({ ...p, partType: PART_TYPES.ASSIST_BLADE })),
-  ];
+  if (!_allPartsCache) {
+    _allPartsCache = [
+      ...BLADES.map(p => ({ ...p, partType: PART_TYPES.BLADE })),
+      ...RATCHETS.map(p => ({ ...p, partType: PART_TYPES.RATCHET })),
+      ...BITS.map(p => ({ ...p, partType: PART_TYPES.BIT })),
+      ...CX_LOCK_CHIPS.map(p => ({ ...p, partType: PART_TYPES.LOCK_CHIP })),
+      ...CX_MAIN_BLADES.map(p => ({ ...p, partType: PART_TYPES.MAIN_BLADE })),
+      ...CX_ASSIST_BLADES.map(p => ({ ...p, partType: PART_TYPES.ASSIST_BLADE })),
+    ];
+  }
+  return _allPartsCache;
 }
 
 export function getPartById(id) {
-  return getAllParts().find(p => p.id === id) || null;
+  if (!_partByIdMap) {
+    _partByIdMap = {};
+    getAllParts().forEach(p => { _partByIdMap[p.id] = p; });
+  }
+  return _partByIdMap[id] || null;
+}
+
+/** 取得零件顯示名稱（中英文） */
+export function getPartDisplayName(p) {
+  if (!p) return '?';
+  const cn = p.nameJP || p.nameCN || '';
+  return cn ? `${p.name} ${cn}` : p.name;
 }
 
 export const TIER_COLORS = {
@@ -225,3 +242,4 @@ export const TIER_COLORS = {
 export const TYPE_ICONS = {
   '攻擊': '⚔️', '防禦': '🛡️', '持久': '🔄', '平衡': '⚖️', '特殊': '✨',
 };
+

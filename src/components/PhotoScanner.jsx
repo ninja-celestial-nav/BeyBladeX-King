@@ -4,7 +4,10 @@ import useInventoryStore from '../store/useInventoryStore';
 import { getAllParts } from '../data/partsDatabase';
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+const USE_PROXY = !GEMINI_API_KEY; // 如果沒有前端 key，使用 serverless proxy
+const GEMINI_URL = USE_PROXY
+  ? '/api/scan'
+  : `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 const SYSTEM_PROMPT = `你是 Beyblade X 戰鬥陀螺零件辨識專家。請辨識照片中所有可見的 Beyblade X 零件。
 
@@ -96,7 +99,11 @@ export default function PhotoScanner({ onClose }) {
       }));
       setResults(enriched);
     } catch (e) {
-      setError(e.message);
+      if (e.message.includes('429')) setError('API 請求次數超過限制，請稍後再試');
+      else if (e.message.includes('403')) setError('API Key 無效或已過期，請檢查設定');
+      else if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) setError('網路連線失敗，請檢查網路後重試');
+      else if (e.message.includes('無法解析')) setError('AI 無法辨識此照片中的零件，請嘗試更清晰的照片');
+      else setError(e.message);
     } finally {
       setScanning(false);
     }

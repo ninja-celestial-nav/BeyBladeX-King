@@ -659,15 +659,117 @@ body::before {
 ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
 
+/* === Page Transitions === */
+.page-transition {
+  animation: page-enter 0.35s ease;
+}
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Card Stagger Animation === */
+.parts-grid > * {
+  animation: card-in 0.3s ease both;
+}
+.parts-grid > *:nth-child(1) { animation-delay: 0.02s; }
+.parts-grid > *:nth-child(2) { animation-delay: 0.04s; }
+.parts-grid > *:nth-child(3) { animation-delay: 0.06s; }
+.parts-grid > *:nth-child(4) { animation-delay: 0.08s; }
+.parts-grid > *:nth-child(5) { animation-delay: 0.10s; }
+.parts-grid > *:nth-child(6) { animation-delay: 0.12s; }
+.parts-grid > *:nth-child(n+7) { animation-delay: 0.14s; }
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* === Recommendation Card Animation === */
+.rec-card {
+  animation: rec-slide 0.4s ease both;
+}
+.rec-card:nth-child(1) { animation-delay: 0.1s; }
+.rec-card:nth-child(2) { animation-delay: 0.25s; }
+.rec-card:nth-child(3) { animation-delay: 0.4s; }
+@keyframes rec-slide {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* === Bottom Nav (Mobile) === */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-glass);
+  display: flex;
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.bottom-nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: 'Outfit', sans-serif;
+  font-size: 10px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.bottom-nav-btn.active {
+  color: var(--accent-cyan);
+}
+
+.bottom-nav-btn.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 3px;
+  background: var(--accent-cyan);
+  border-radius: 0 0 3px 3px;
+}
+
 /* === Responsive === */
 @media (max-width: 768px) {
-  .sidebar { width: 56px; }
-  .sidebar-btn { width: 40px; height: 40px; }
-  .main-content { margin-left: 56px; padding: 16px; }
+  .app-layout.mobile .sidebar { display: none; }
+  .app-layout.mobile .main-content {
+    margin-left: 0;
+    padding: 16px 14px 80px 14px;
+  }
   .deck-slots { grid-template-columns: 1fr; }
   .parts-grid { grid-template-columns: 1fr; }
   .page-header h1 { font-size: 20px; }
+  .page-header p { font-size: 12px; }
   .stats-row { gap: 8px; }
-  .stat-chip { min-width: 100px; padding: 10px 14px; }
+  .stat-chip { min-width: 80px; padding: 10px 12px; }
   .stat-chip .stat-value { font-size: 18px; }
+  .action-bar { gap: 6px; }
+  .action-bar .btn { padding: 8px 12px; font-size: 12px; }
+  .tabs { gap: 2px; padding: 3px; }
+  .tab-btn { padding: 8px 12px; font-size: 12px; }
+  .search-bar input { font-size: 16px; /* prevent iOS zoom */ }
+  .modal-content { width: 95%; max-height: 85vh; padding: 20px 16px; }
+  .bey-slot { padding: 14px; }
+  .bey-slot h3 { font-size: 13px; }
+  .rec-card { padding: 14px; }
+}
+
+@media (max-width: 480px) {
+  .page-header h1 { font-size: 17px; letter-spacing: 0; }
+  .stat-chip .stat-value { font-size: 16px; }
+  .part-card { padding: 10px 12px; gap: 8px; }
+  .part-card .part-name { font-size: 13px; }
 }
