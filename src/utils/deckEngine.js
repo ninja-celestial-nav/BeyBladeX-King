@@ -1,4 +1,4 @@
-﻿import { BLADES, RATCHETS, BITS, getPartById, TIER_COLORS } from '../data/partsDatabase';
+import { BLADES, RATCHETS, BITS, getPartById, TIER_COLORS } from '../data/partsDatabase';
 
 const TIER_SCORE = { 'T0': 10, 'T0.5': 8, 'T1': 6, 'T2': 3, 'T3': 1 };
 
@@ -178,6 +178,55 @@ export function getMatchupAnalysis(combos) {
     stamina: Math.round((stamina / max) * 100),
     counter: Math.round((counter / max) * 100),
   };
+}
+
+/** 單一配置的戰力分析（每顆陀螺獨立評分） */
+export function getSingleComboAnalysis(combo) {
+  const blade = getPartById(combo.blade);
+  const ratchet = getPartById(combo.ratchet);
+  const bit = getPartById(combo.bit);
+  if (!blade || !ratchet || !bit) return null;
+
+  const tierVal = { 'T0': 95, 'T0.5': 82, 'T1': 65, 'T2': 45, 'T3': 25 };
+  let atk = 10, def = 10, sta = 10, burst = 10;
+
+  // 刃型基礎
+  if (blade.type === '攻擊') { atk += 50; burst += 30; def += 5; sta += 5; }
+  if (blade.type === '防禦') { def += 50; sta += 20; atk += 5; burst += 10; }
+  if (blade.type === '持久') { sta += 50; def += 15; atk += 5; burst += 5; }
+  if (blade.type === '平衡') { atk += 25; def += 20; sta += 20; burst += 15; }
+
+  // 刃 Tier 加成
+  const bladeTier = (tierVal[blade.tier] || 40) / 100;
+  atk = Math.round(atk * (0.6 + bladeTier * 0.4));
+  def = Math.round(def * (0.6 + bladeTier * 0.4));
+  sta = Math.round(sta * (0.6 + bladeTier * 0.4));
+
+  // 棘輪高度影響
+  if (ratchet.height <= 50) { atk += 10; burst += 10; }
+  else if (ratchet.height >= 70) { sta += 8; def += 5; }
+  // 棘輪 Tier
+  const rTier = (tierVal[ratchet.tier] || 40) / 100;
+  atk += Math.round(5 * rTier); def += Math.round(5 * rTier); sta += Math.round(5 * rTier);
+
+  // 軸心類型
+  const atkBits = ['b-low-rush','b-rush','b-gear-rush','b-kick','b-trans-kick','b-rubber-accel','b-gear-flat','b-flat','b-low-flat','b-accel'];
+  const defBits = ['b-hexa','b-bound-spike','b-spike'];
+  const staBits = ['b-ball','b-free-ball','b-glide','b-unite','b-high-taper','b-metal-needle','b-needle','b-orb','b-taper','b-dot','b-point'];
+  if (atkBits.includes(bit.id)) { atk += 15; burst += 20; }
+  else if (defBits.includes(bit.id)) { def += 20; sta += 8; }
+  else if (staBits.includes(bit.id)) { sta += 20; def += 5; }
+  else { atk += 8; sta += 8; def += 5; burst += 5; }
+
+  // 左旋 burst 優勢
+  if (blade.spin === '左旋') { burst += 15; sta += 5; }
+
+  // 協同加成
+  const syn = SYNERGY_BONUSES.find(s => s.blade === combo.blade && s.bit === combo.bit);
+  if (syn) { atk += syn.bonus * 2; sta += syn.bonus; burst += syn.bonus; }
+
+  const cap = v => Math.min(100, Math.max(0, v));
+  return { attack: cap(atk), defense: cap(def), stamina: cap(sta), burst: cap(burst) };
 }
 
 export function getComboDescription(combo) {

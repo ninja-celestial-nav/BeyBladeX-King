@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { RotateCcw, Save, CheckCircle, AlertTriangle } from 'lucide-react';
 import useInventoryStore from '../store/useInventoryStore';
 import { BLADES, RATCHETS, BITS, getPartById, TIER_COLORS, getPartDisplayName } from '../data/partsDatabase';
-import { getLaunchAdvice, getMatchupAnalysis } from '../utils/deckEngine';
+import { getLaunchAdvice, getSingleComboAnalysis } from '../utils/deckEngine';
 
 const ROLES = ['先鋒', '中堅', '大將'];
 const ROLE_ICONS = { '先鋒': '🔰', '中堅': '🔄', '大將': '👑' };
@@ -28,10 +28,6 @@ export default function DeckBuilderPage() {
   const ownedRatchets = useMemo(() => RATCHETS.filter(r => (inventory[r.id] || 0) > 0), [inventory]);
   const ownedBits = useMemo(() => BITS.filter(b => (inventory[b.id] || 0) > 0), [inventory]);
 
-  // 即時戰力計算
-  const allCombos = ['slot1','slot2','slot3'].map(k => currentDeck[k]).filter(s => s.blade && s.ratchet && s.bit);
-  const matchup = allCombos.length > 0 ? getMatchupAnalysis(allCombos) : null;
-
   const handleSave = () => {
     const name = prompt('為這套牌組命名：');
     if (name) saveDeck(name);
@@ -48,18 +44,6 @@ export default function DeckBuilderPage() {
         <div className={`validation-banner ${validation.isValid ? 'valid' : 'invalid'}`}>
           {validation.isValid ? <><CheckCircle size={18} /> ✅ WBO 合法！所有零件完全不同，可以上場！</>
             : <><AlertTriangle size={18} /> ⚠️ 違規！有零件被重複使用，請修正</>}
-        </div>
-      )}
-
-      {matchup && (
-        <div style={{ marginBottom: 16, padding: '12px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-glass)', borderRadius: 12 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-cyan)', marginBottom: 8 }}>📊 即時戰力分析</div>
-          <div style={{ display: 'grid', gap: 4 }}>
-            <PowerBar label="攻擊" value={matchup.attack} color="#ff416c" />
-            <PowerBar label="防禦" value={matchup.defense} color="#64b5f6" />
-            <PowerBar label="持久" value={matchup.stamina} color="#81c784" />
-            <PowerBar label="反制" value={matchup.counter} color="#f093fb" />
-          </div>
         </div>
       )}
 
@@ -122,6 +106,17 @@ export default function DeckBuilderPage() {
                     {blade?.name || '?'} {ratchet?.name || '?'} {bit?.abbr || '?'}
                   </div>
                   {blade && <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{blade.type} • {blade.spin} • {blade.system}</div>}
+                  {blade && ratchet && bit && (() => {
+                    const ca = getSingleComboAnalysis({ blade: slot.blade, ratchet: slot.ratchet, bit: slot.bit });
+                    return ca ? (
+                      <div style={{ marginTop: 8, display: 'grid', gap: 3 }}>
+                        <PowerBar label="攻擊" value={ca.attack} color="#ff416c" />
+                        <PowerBar label="防禦" value={ca.defense} color="#64b5f6" />
+                        <PowerBar label="持久" value={ca.stamina} color="#81c784" />
+                        <PowerBar label="爆發" value={ca.burst} color="#ffa94d" />
+                      </div>
+                    ) : null;
+                  })()}
                   {blade && ratchet && bit && (() => {
                     const la = getLaunchAdvice({ blade: slot.blade, ratchet: slot.ratchet, bit: slot.bit });
                     return la ? (
