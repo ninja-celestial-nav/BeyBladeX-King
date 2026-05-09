@@ -106,6 +106,14 @@ export default function DeckBuilderPage() {
                           {la.power}<br/>{la.angle}<br/>{la.timing}
                         </div>
                         <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.4 }}>{la.detail}</div>
+                        {la.steps && la.steps.length > 0 && (
+                          <div style={{ marginTop: 6, borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 6 }}>
+                            <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--accent-cyan)', marginBottom: 3 }}>📋 執行步驟：</div>
+                            {la.steps.map((s, si) => (
+                              <div key={si} style={{ fontSize: 10, color: 'var(--text-secondary)', lineHeight: 1.5, padding: '2px 0' }}>{s}</div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ) : null;
                   })()}

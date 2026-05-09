@@ -141,6 +141,14 @@ export default function AdvisorPage() {
                                 <span style={{ gridColumn: '1/-1' }}>{la.timing}</span>
                               </div>
                               <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.5, borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 6 }}>{la.detail}</div>
+                              {la.steps && la.steps.length > 0 && (
+                                <div style={{ marginTop: 8, borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 8 }}>
+                                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-cyan)', marginBottom: 4 }}>📋 執行步驟：</div>
+                                  {la.steps.map((s, si) => (
+                                    <div key={si} style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.6, padding: '3px 0', borderBottom: si < la.steps.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>{s}</div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           ) : null; })()}
                         </div>

@@ -1,4 +1,4 @@
-import { BLADES, RATCHETS, BITS, getPartById, TIER_COLORS } from '../data/partsDatabase';
+﻿import { BLADES, RATCHETS, BITS, getPartById, TIER_COLORS } from '../data/partsDatabase';
 
 const TIER_SCORE = { 'T0': 10, 'T0.5': 8, 'T1': 6, 'T2': 3, 'T3': 1 };
 
@@ -187,7 +187,6 @@ export function getComboDescription(combo) {
   if (!blade || !ratchet || !bit) return '';
   return `${blade.name} ${ratchet.name} ${bit.name}`;
 }
-
 // 發射方式建議系統
 export function getLaunchAdvice(combo) {
   const blade = getPartById(combo.blade);
@@ -195,113 +194,52 @@ export function getLaunchAdvice(combo) {
   const bit = getPartById(combo.bit);
   if (!blade || !ratchet || !bit) return null;
 
-  const isAttackBit = ['b-low-rush','b-rush','b-kick','b-trans-kick','b-rubber-accel','b-gear-flat','b-flat','b-low-flat','b-accel','b-gear-rush'].includes(bit.id);
-  const isStaminaBit = ['b-ball','b-free-ball','b-glide','b-unite','b-high-taper','b-metal-needle','b-needle','b-orb','b-taper','b-dot','b-point'].includes(bit.id);
-  const isDefenseBit = ['b-hexa','b-bound-spike','b-spike'].includes(bit.id);
-  const isBalanceBit = ['b-elevate','b-level'].includes(bit.id);
-  const isLeftSpin = blade.spin === '左旋';
-  const isLowHeight = ratchet.height <= 55;
-  const isHighHeight = ratchet.height >= 75;
+  const atkBits = ['b-low-rush','b-rush','b-kick','b-trans-kick','b-rubber-accel','b-gear-flat','b-flat','b-low-flat','b-accel','b-gear-rush'];
+  const staBits = ['b-ball','b-free-ball','b-glide','b-unite','b-high-taper','b-metal-needle','b-needle','b-orb','b-taper','b-dot','b-point'];
+  const defBits = ['b-hexa','b-bound-spike','b-spike'];
+  const balBits = ['b-elevate','b-level'];
+  const isAtk = atkBits.includes(bit.id), isSta = staBits.includes(bit.id);
+  const isDef = defBits.includes(bit.id), isBal = balBits.includes(bit.id);
+  const isL = blade.spin === '左旋';
+  const lowH = ratchet.height <= 55, hiH = ratchet.height >= 75;
 
-  let power = ''; // 力道
-  let angle = ''; // 角度
-  let timing = ''; // 時機
-  let technique = ''; // 技巧名稱
-  let detail = ''; // 詳細說明
-  let emoji = '';
+  let r = { power:'', angle:'', timing:'', technique:'', detail:'', emoji:'', steps:[] };
 
-  if (isAttackBit) {
-    if (bit.id === 'b-low-rush' || bit.id === 'b-rush' || bit.id === 'b-gear-rush') {
-      power = '💪 全力 (90-100%)';
-      angle = '📐 水平平射 (0°)';
-      timing = '⏱️ 倒數同時發射，搶先觸發 X-Dash';
-      technique = '滿力平射 (Full Power Flat Shot)';
-      detail = isLowHeight
-        ? '超低棘輪搭配衝刺軸心，平射後陀螺會貼地高速移動，利用上掀力從對手下方擊飛。發射瞬間手腕快速向內翻轉增加初速。'
-        : '標準攻擊發射，全力拉繩讓軸心立刻接觸 X-Celerator 軌道觸發 Xtreme Dash，追求首次接觸就 KO。';
-      emoji = '🔥';
-    } else if (bit.id === 'b-kick' || bit.id === 'b-trans-kick') {
-      power = '💪 強力 (80-90%)';
-      angle = '📐 微傾斜射 (5-10°)';
-      timing = '⏱️ 略慢於對手 0.5 秒，利用踢擊軌道反擊';
-      technique = '延遲踢射 (Delayed Kick Shot)';
-      detail = 'Kick 軸心的不規則移動是雙面刃。微傾角度發射讓陀螺先穩定 1-2 圈再觸發踢擊軌道，能更精準地撞擊已穩定的對手。';
-      emoji = '🦶';
-    } else if (bit.id === 'b-rubber-accel') {
-      power = '💪 強力 (85-95%)';
-      angle = '📐 水平平射 (0°)';
-      timing = '⏱️ 與對手同步發射';
-      technique = '橡膠加速射 (Rubber Accel Shot)';
-      detail = '橡膠材質提供額外抓地力，平射後會有爆發性的加速效果。發射力道要足夠但不要過猛，讓橡膠軸心能穩定抓住場地面。';
-      emoji = '⚡';
-    } else {
-      power = '💪 強力 (80-90%)';
-      angle = '📐 水平平射 (0°)';
-      timing = '⏱️ 標準時機';
-      technique = '標準攻擊射 (Standard Attack Shot)';
-      detail = '保持水平角度全力發射，讓攻擊型軸心發揮最大移動速度。注意控制發射方向，避免初始軌道偏離中心。';
-      emoji = '⚔️';
-    }
-  } else if (isDefenseBit) {
-    power = '🤚 中等 (50-65%)';
-    angle = '📐 傾斜發射 (15-25°)';
-    timing = '⏱️ 略早於對手發射，搶佔中心位置';
-    technique = '傾斜定位射 (Tilt Position Shot)';
-    detail = bit.id === 'b-hexa'
-      ? 'Hexa 六角軸心的制動效果在傾斜發射時最有效。以 15-20° 角度發射，讓陀螺落地時微晃 → Hexa 的六角面會立刻產生制動力 → 陀螺快速穩定在場地中心。過度用力反而會降低穩定性。'
-      : '防禦型軸心需要穩定而非速度。中等力道傾斜發射，讓陀螺在場地中心建立防禦陣地，等待對手撞上來。';
-    emoji = '🛡️';
-  } else if (isStaminaBit) {
-    if (bit.id === 'b-free-ball') {
-      power = '🤚 中等偏弱 (40-55%)';
-      angle = '📐 垂直下壓 (30-45°)';
-      timing = '⏱️ 可略晚發射，持久戰不急';
-      technique = '柔力下壓射 (Soft Drop Shot)';
-      detail = 'Free Ball 的自由滾動特性在低速時表現最佳。大角度下壓發射讓陀螺從高處穩定落入場地中心，自由球會自動找到最穩定的旋轉位置。切忌全力發射，會導致陀螺失控亂跑。';
-      emoji = '🎱';
-    } else {
-      power = '🤚 中等 (45-60%)';
-      angle = '📐 傾斜發射 (10-20°)';
-      timing = '⏱️ 標準時機，保持穩定';
-      technique = '穩定持久射 (Stable Stamina Shot)';
-      detail = '持久型配置的發射核心是「穩」而非「猛」。適當的傾斜角度讓陀螺快速穩定，中等力道確保旋轉時間最長。發射時保持手腕穩定，避免左右晃動。';
-      emoji = '🔄';
-    }
-  } else if (isBalanceBit) {
-    if (bit.id === 'b-elevate') {
-      power = isLeftSpin ? '💪 中強 (65-80%)' : '💪 強力 (75-85%)';
-      angle = '📐 微傾斜射 (5-15°)';
-      timing = '⏱️ 與對手同步或略晚';
-      technique = isLeftSpin ? '左旋升降射 (L-Spin Elevate Shot)' : '升降攻擊射 (Elevate Attack Shot)';
-      detail = isLeftSpin
-        ? 'Elevate 搭配左旋刃是同化型戰術。中強力道讓 Elevate 的彎曲齒輪產生升降軌道，前期主動接觸對手吸收旋轉力，後期靠剩餘旋轉力取勝。發射角度不宜太大，保持接觸頻率。'
-        : 'Elevate 的升降效果在右旋時增加打擊面高度變化，讓對手難以預測接觸點。';
-      emoji = '↕️';
-    } else if (bit.id === 'b-level') {
-      power = isLeftSpin ? '💪 中強 (60-75%)' : '💪 強力 (70-85%)';
-      angle = '📐 斜射 (10-20°)';
-      timing = isLeftSpin ? '⏱️ 略晚 0.5-1 秒，後發制人' : '⏱️ 標準時機';
-      technique = isLeftSpin ? '左旋變速射 (L-Spin Variable Shot)' : '雙模式射 (Dual Mode Shot)';
-      detail = isLeftSpin
-        ? 'Level 搭配左旋的精髓是「前攻後守」。中強力道斜射讓前期有足夠速度主動出擊，當速度下降後 Level 自動切換為持久模式，利用左旋優勢吸收對手殘餘旋轉。略晚發射可以讓對手先消耗。'
-        : 'Level 的雙模式特性：前期高速 X-Dash 攻擊，後期自動轉為持久。斜射讓兩個模式都能發揮效果。';
-      emoji = '🔀';
-    }
+  if (isAtk && ['b-low-rush','b-rush','b-gear-rush'].includes(bit.id)) {
+    Object.assign(r, { power:'💪 全力 (90-100%)', angle:'📐 水平平射 (0°)', timing:'⏱️ 倒數同時發射，搶先觸發 X-Dash', technique:'滿力平射 (Full Power Flat Shot)', emoji:'🔥', detail:'全力拉繩觸發 Xtreme Dash，追求首次接觸 KO。',
+      steps:['① 握持：發射器握把朝下，手臂自然伸直，發射器與場地面完全平行（0°角）','② 拉繩準備：拉繩拉到底端，非慣用手穩穩托住發射器本體，防止發射瞬間晃動','③ 瞄準：發射口對準場地中心偏外側約 2-3cm（讓陀螺沿弧線掃過中心）','④ 發射：倒數「1」時瞬間全力拉繩！手腕同時快速向內翻轉（像擰毛巾），額外增加 10-15% 初速','⑤ 跟進：發射後立刻收回手臂，不要干擾陀螺初始軌道']});
+  } else if (isAtk && ['b-kick','b-trans-kick'].includes(bit.id)) {
+    Object.assign(r, { power:'💪 強力 (80-90%)', angle:'📐 微傾斜射 (5-10°)', timing:'⏱️ 略慢於對手 0.5 秒', technique:'延遲踢射 (Delayed Kick Shot)', emoji:'🦶', detail:'微傾發射讓陀螺先穩定再觸發踢擊軌道。',
+      steps:['① 握持：發射器微微向場地中心傾斜 5-10°（略微朝下）','② 等待：聽到對手發射聲後，默數 0.5 秒再拉繩（讓對手先落地）','③ 發射：80-90% 力道拉繩（不要全力），保持傾斜角度不變','④ 落地後陀螺先繞場 1-2 圈穩定，接著 Kick 軸心觸發不規則彈跳軌道撞向對手','⑤ 注意：全力平射會導致 Kick 亂飛甚至自爆出場']});
+  } else if (isAtk && bit.id === 'b-rubber-accel') {
+    Object.assign(r, { power:'💪 強力 (85-95%)', angle:'📐 水平平射 (0°)', timing:'⏱️ 與對手同步發射', technique:'橡膠加速射 (Rubber Accel Shot)', emoji:'⚡', detail:'橡膠抓地力帶來爆發加速。',
+      steps:['① 握持：發射器完全水平','② 發射：85-95% 力道拉繩（保留 5-10% 控制力）','③ 落地後前 0.5 秒因橡膠摩擦暫時減速，然後突然爆發加速——這是 Rubber Accel 精髓','④ 禁忌：不要 100% 全力！過大初速讓橡膠軸心彈跳，反而失去抓地力']});
+  } else if (isAtk) {
+    Object.assign(r, { power:'💪 強力 (80-90%)', angle:'📐 水平平射 (0°)', timing:'⏱️ 標準時機', technique:'標準攻擊射 (Standard Attack Shot)', emoji:'⚔️', detail:'水平全力發射，發揮最大移動速度。',
+      steps:['① 握持：發射器與場地面平行，手臂放鬆但穩定','② 瞄準：發射口朝向場地中心','③ 發射：均勻有力拉繩（80-90%），手腕保持固定不晃動','④ 要點：追求「穩定的強力」，軌道穩定比絕對速度更重要']});
+  } else if (isDef) {
+    const isHex = bit.id === 'b-hexa';
+    Object.assign(r, { power:'🤚 中等 (50-65%)', angle:'📐 傾斜發射 (15-25°)', timing:'⏱️ 略早於對手發射，搶佔中心', technique:'傾斜定位射 (Tilt Position Shot)', emoji:'🛡️', detail:'中等力道傾斜發射，在中心建立防禦陣地。',
+      steps: isHex ? ['① 握持：發射器朝場地中心傾斜 15-20°（想像時鐘 1 點方向）','② 力道控制：只用 50-65%！Hexa 需要穩定不需要速度，這是最關鍵的一步','③ 發射：平穩拉繩，想像「推」而不是「扯」，手臂全程穩定','④ 落地：陀螺以傾斜角落地 → 微晃 → Hexa 六角面立刻產生制動力 → 0.5秒內穩定在中心','⑤ 搶先：比對手早 0.3-0.5 秒發射，陀螺已穩定在中心等對手撞上來','⑥ 常見錯誤：力道太大讓 Hexa 無法制動，陀螺到處亂跑']
+        : ['① 握持：發射器傾斜 15-25°','② 發射：中等力道穩定拉繩，目標讓陀螺落在場地正中心','③ 策略：防禦型勝利方式是「讓對手來撞你」，位置比速度重要','④ 心態：不要急，穩穩發射，讓尖刺/防禦軸心吸收衝擊反彈對手']});
+  } else if (isSta && bit.id === 'b-free-ball') {
+    Object.assign(r, { power:'🤚 中等偏弱 (40-55%)', angle:'📐 垂直下壓 (30-45°)', timing:'⏱️ 可略晚發射', technique:'柔力下壓射 (Soft Drop Shot)', emoji:'🎱', detail:'Free Ball 低速時最穩，大角度下壓讓陀螺穩定落入中心。',
+      steps:['① 握持：發射器大角度傾斜 30-45°（幾乎朝下射），Free Ball 專用極端角度','② 力道：只用 40-55%！所有技巧中力道最小。Free Ball 自由滾動機構在低速最穩','③ 發射：輕柔但確實地拉繩，想像「讓陀螺溫柔降落」','④ 落地後：Free Ball 像不倒翁自動找到最穩定的旋轉軸心','⑤ 絕對禁忌：全力發射 Free Ball 是最常見新手錯誤！高速 Free Ball 完全失控','⑥ 進階：落點放在場地中心偏低處，利用場地弧面自然滑向最低點']});
+  } else if (isSta) {
+    Object.assign(r, { power:'🤚 中等 (45-60%)', angle:'📐 傾斜發射 (10-20°)', timing:'⏱️ 標準時機', technique:'穩定持久射 (Stable Stamina Shot)', emoji:'🔄', detail:'核心是「穩」不是「猛」，中等力道確保最長旋轉。',
+      steps:['① 握持：發射器傾斜 10-20°，手臂放鬆','② 呼吸：發射前深呼吸一次穩定心神（持久戰關鍵是穩定性）','③ 發射：45-60% 均勻力道拉繩，全程手腕完全不動','④ 要訣：想像「遞出」陀螺而非「甩出」。越穩定 = 越少能量浪費 = 越長旋轉時間','⑤ 常見錯誤：手腕左右晃動產生「章動」（歪斜旋轉），大幅減少持久時間']});
+  } else if (isBal && bit.id === 'b-elevate') {
+    Object.assign(r, { power:isL?'💪 中強 (65-80%)':'💪 強力 (75-85%)', angle:'📐 微傾斜射 (5-15°)', timing:'⏱️ 與對手同步或略晚', technique:isL?'左旋升降射 (L-Spin Elevate Shot)':'升降攻擊射 (Elevate Attack Shot)', emoji:'↕️', detail:'Elevate 彎曲齒輪產生升降軌道。',
+      steps: isL ? ['① 握持：左旋發射器裝填完成，傾斜 5-10°','② 力道：65-80% 中強力道。同化戰術不需最大速度，需要持續接觸頻率','③ 發射：穩定拉繩，注意左旋拉繩方向與右旋相反（向左拉）','④ 落地後以中速繞場，Elevate 升降軌道讓陀螺不斷上下跳動接觸對手','⑤ 同化原理：左旋碰右旋時「吸收」對手旋轉力。前期你會減速，但對手減速更快','⑥ 勝利條件：比誰最後還在轉。持續接觸，左旋 Elevate 幾乎必勝持久戰']
+        : ['① 握持：發射器傾斜 5-15°','② 發射：75-85% 力道拉繩','③ Elevate 齒輪面在高速時產生高度變化，對手難以預測碰撞點','④ 對手是防禦型時，加大力道到 90% 利用高度變化突破防禦']});
+  } else if (isBal && bit.id === 'b-level') {
+    Object.assign(r, { power:isL?'💪 中強 (60-75%)':'💪 強力 (70-85%)', angle:'📐 斜射 (10-20°)', timing:isL?'⏱️ 略晚 0.5-1 秒，後發制人':'⏱️ 標準時機', technique:isL?'左旋變速射 (L-Spin Variable Shot)':'雙模式射 (Dual Mode Shot)', emoji:'🔀', detail:'Level 雙模式：前期 X-Dash 攻擊，後期自動切換持久。',
+      steps: isL ? ['① 握持：左旋發射器傾斜 10-20°','② 時機：故意比對手晚 0.5-1 秒發射！讓對手先消耗','③ 發射：60-75% 力道，不要太猛','④ 前半場：Level 平坦面觸發中速移動，主動接觸對手吸收旋轉力','⑤ 後半場：速度降低後 Level 自動從「攻擊」切換「持久」模式，左旋優勢全面發揮','⑥ 精髓：「前攻後守」——前半消耗對手，後半用持久力取勝。這就是保留力道 60-75% 的原因']
+        : ['① 握持：發射器傾斜 10-20°','② 發射：70-85% 力道拉繩','③ 前期 Level 平面產生移動力觸發 X-Dash','④ 後期速度降低自動切換持久模式','⑤ 斜射讓兩模式轉換更順暢']});
   }
 
-  // 特殊配置修正
-  if (isLeftSpin && !isBalanceBit) {
-    technique = '左旋 ' + technique;
-    detail += ' ⬅️ 左旋注意：發射方向與右旋相反，需要特別練習拉繩/發射器的反向操作。';
-  }
-
-  if (isLowHeight && isAttackBit) {
-    detail += ' 📏 超低棘輪加成：低重心讓接觸點低於對手，產生「上掀力」效果更佳。';
-  }
-
-  if (isHighHeight) {
-    detail += ' 📏 高棘輪注意：重心較高容易頭重腳輕，發射時務必保持水平穩定。';
-  }
-
-  return { power, angle, timing, technique, detail, emoji };
+  if (isL && !isBal) { r.technique = '左旋 ' + r.technique; r.steps.push('⬅️ 左旋提醒：拉繩方向相反。建議先空拉 3-5 次找感覺再正式發射'); }
+  if (lowH && isAtk) r.steps.push('📏 低棘輪加成：重心極低，從對手下方攻擊產生上掀力，KO 效率最高的物理優勢');
+  if (hiH) r.steps.push('📏 高棘輪注意：重心偏高容易頭重腳輕，發射時特別注意保持水平');
+  return r;
 }
