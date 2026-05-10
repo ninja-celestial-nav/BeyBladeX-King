@@ -1,4 +1,4 @@
-import { BLADES, RATCHETS, BITS, getPartById, TIER_COLORS } from '../data/partsDatabase';
+import { BLADES, RATCHETS, BITS, getPartById } from '../data/partsDatabase';
 
 const TIER_SCORE = { 'T0': 10, 'T0.5': 8, 'T1': 6, 'T2': 3, 'T3': 1 };
 

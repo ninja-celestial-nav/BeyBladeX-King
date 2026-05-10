@@ -789,3 +789,8 @@ body::before {
   .part-card { padding: 10px 12px; gap: 8px; }
   .part-card .part-name { font-size: 13px; }
 }
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

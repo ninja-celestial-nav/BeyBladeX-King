@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Package, Wrench, Brain, Book, History, Keyboard } from 'lucide-react';
-import InventoryPage from './pages/InventoryPage';
-import DeckBuilderPage from './pages/DeckBuilderPage';
-import AdvisorPage from './pages/AdvisorPage';
-import EncyclopediaPage from './pages/EncyclopediaPage';
-import HistoryPage from './pages/HistoryPage';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { Package, Wrench, Brain, Book, History, Keyboard, Sun, Moon } from 'lucide-react';
+import ErrorBoundary from './components/ErrorBoundary';
+
+const InventoryPage = lazy(() => import('./pages/InventoryPage'));
+const DeckBuilderPage = lazy(() => import('./pages/DeckBuilderPage'));
+const AdvisorPage = lazy(() => import('./pages/AdvisorPage'));
+const EncyclopediaPage = lazy(() => import('./pages/EncyclopediaPage'));
+const HistoryPage = lazy(() => import('./pages/HistoryPage'));
 
 const PAGES = [
   { id: 'inventory', icon: Package, label: '武器庫', key: '1' },
@@ -13,6 +15,17 @@ const PAGES = [
   { id: 'encyclopedia', icon: Book, label: '圖鑑', key: '4' },
   { id: 'history', icon: History, label: '紀錄', key: '5' },
 ];
+
+function LoadingFallback() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 40, animation: 'spin-slow 1s linear infinite', display: 'inline-block' }}>🌀</div>
+        <p style={{ color: 'var(--text-secondary)', marginTop: 12, fontFamily: 'Outfit' }}>載入中...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   const [page, setPage] = useState('inventory');
@@ -26,13 +39,13 @@ export default function App() {
     return () => window.removeEventListener('resize', handler);
   }, []);
 
-  // Theme
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('bx-theme', theme);
   }, [theme]);
 
-  // Keyboard shortcuts
+  const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
+
   const handleKey = useCallback((e) => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
     const pg = PAGES.find(p => p.key === e.key);
@@ -47,11 +60,22 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [handleKey]);
 
+  const renderPage = () => {
+    switch (page) {
+      case 'inventory': return <InventoryPage />;
+      case 'deck': return <DeckBuilderPage />;
+      case 'advisor': return <AdvisorPage />;
+      case 'encyclopedia': return <EncyclopediaPage />;
+      case 'history': return <HistoryPage />;
+      default: return <InventoryPage />;
+    }
+  };
+
   return (
     <div className={`app-layout ${isMobile ? 'mobile' : ''}`}>
       {!isMobile && (
         <nav className="sidebar">
-          <div className="sidebar-logo" onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} title="切換主題">🌀</div>
+          <div className="sidebar-logo" onClick={toggleTheme} title="切換主題">🌀</div>
           {PAGES.map(p => (
             <button key={p.id} className={`sidebar-btn ${page === p.id ? 'active' : ''}`}
               onClick={() => setPage(p.id)} title={`${p.label} (${p.key})`}>
@@ -64,13 +88,13 @@ export default function App() {
         </nav>
       )}
       <main className="main-content">
-        <div className="page-transition" key={page}>
-          {page === 'inventory' && <InventoryPage />}
-          {page === 'deck' && <DeckBuilderPage />}
-          {page === 'advisor' && <AdvisorPage />}
-          {page === 'encyclopedia' && <EncyclopediaPage />}
-          {page === 'history' && <HistoryPage />}
-        </div>
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingFallback />}>
+            <div className="page-transition" key={page}>
+              {renderPage()}
+            </div>
+          </Suspense>
+        </ErrorBoundary>
       </main>
       {isMobile && (
         <nav className="bottom-nav">
@@ -81,6 +105,10 @@ export default function App() {
               <span>{p.label}</span>
             </button>
           ))}
+          <button className="bottom-nav-btn" onClick={toggleTheme}>
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            <span>主題</span>
+          </button>
         </nav>
       )}
 

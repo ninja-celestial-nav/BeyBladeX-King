@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Search, ExternalLink, Image as ImageIcon } from 'lucide-react';
-import { getAllParts, TIER_COLORS, TYPE_ICONS } from '../data/partsDatabase';
+import { getAllParts, TIER_COLORS, TYPE_ICONS, DB_LAST_UPDATED } from '../data/partsDatabase';
+import { useDebounce } from '../hooks/useDebounce';
 
 const FILTER_TYPES = [
   { id: 'all', label: '全部' },
@@ -34,11 +35,13 @@ export default function EncyclopediaPage() {
   const [imgError, setImgError] = useState({});
   const allParts = useMemo(() => getAllParts(), []);
 
+  const debouncedSearch = useDebounce(search, 150);
+
   const filtered = allParts
     .filter(p => filterType === 'all' || p.partType === filterType)
     .filter(p => filterTier === '全部' || p.tier === filterTier)
-    .filter(p => !search || [p.name, p.nameJP, p.nameCN, p.code, p.abbr]
-      .some(v => v && v.toLowerCase().includes(search.toLowerCase())));
+    .filter(p => !debouncedSearch || [p.name, p.nameJP, p.nameCN, p.code, p.abbr]
+      .some(v => v && v.toLowerCase().includes(debouncedSearch.toLowerCase())));
 
   const openPhoto = (part) => {
     // 直接開啟 Wiki 頁面看照片
@@ -49,7 +52,7 @@ export default function EncyclopediaPage() {
     <div>
       <div className="page-header">
         <h1>📖 零件圖鑑 ENCYCLOPEDIA</h1>
-        <p>全 {allParts.length} 種零件 — 點擊零件可查看詳細資料，點 📷 查看實物照片</p>
+        <p>全 {allParts.length} 種零件 — 點擊查看詳細資料與照片 <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>資料更新：{DB_LAST_UPDATED}</span></p>
       </div>
 
       <div className="search-bar">
