@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
-import { Search, ExternalLink, Image as ImageIcon } from 'lucide-react';
+import { Search, ExternalLink } from 'lucide-react';
 import { getAllParts, TIER_COLORS, TYPE_ICONS, DB_LAST_UPDATED } from '../data/partsDatabase';
+import { getPartImage } from '../data/partImages';
 import { useDebounce } from '../hooks/useDebounce';
 
 const FILTER_TYPES = [
@@ -14,17 +15,25 @@ const FILTER_TYPES = [
 ];
 const TIER_FILTERS = ['全部', 'T0', 'T0.5', 'T1', 'T2', 'T3'];
 
-function getWikiName(part) {
-  return part.name.replace(/'/g, '').replace(/\s+/g, '');
+function getWikiUrl(part) {
+  const wn = part.name.replace(/'/g, '').replace(/\s+/g, '');
+  return `https://beyblade.fandom.com/wiki/${wn}`;
 }
-function getWikiUrl(part) { return `https://beyblade.fandom.com/wiki/${getWikiName(part)}`; }
-function getSearchUrl(part) { return `https://www.google.com/search?tbm=isch&q=${encodeURIComponent('Beyblade X ' + part.name + ' part official')}`; }
 
-// 用零件名產生 Wikipedia 風格的圖片 URL（Fandom CDN）
-function getWikiImgUrl(part) {
-  const wn = getWikiName(part);
-  // Fandom 預覽圖 pattern（會被 CORS 阻擋但瀏覽器 img src 能載入）
-  return `https://static.wikia.nocookie.net/beyblade/images/thumb/${wn}.png/280px-${wn}.png`;
+function PartImage({ part, size = 64 }) {
+  const [err, setErr] = useState(false);
+  const src = getPartImage(part.id);
+  if (!src || err) {
+    return (
+      <div style={{ width: size, height: size, borderRadius: 10, background: 'var(--bg-glass)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.5, flexShrink: 0 }}>
+        {TYPE_ICONS[part.type] || '⚙️'}
+      </div>
+    );
+  }
+  return (
+    <img src={src} alt={part.name} onError={() => setErr(true)}
+      style={{ width: size, height: size, objectFit: 'contain', borderRadius: 10, background: 'rgba(255,255,255,0.03)', flexShrink: 0 }} />
+  );
 }
 
 export default function EncyclopediaPage() {
@@ -32,9 +41,7 @@ export default function EncyclopediaPage() {
   const [filterType, setFilterType] = useState('all');
   const [filterTier, setFilterTier] = useState('全部');
   const [selected, setSelected] = useState(null);
-  const [imgError, setImgError] = useState({});
   const allParts = useMemo(() => getAllParts(), []);
-
   const debouncedSearch = useDebounce(search, 150);
 
   const filtered = allParts
@@ -43,16 +50,11 @@ export default function EncyclopediaPage() {
     .filter(p => !debouncedSearch || [p.name, p.nameJP, p.nameCN, p.code, p.abbr]
       .some(v => v && v.toLowerCase().includes(debouncedSearch.toLowerCase())));
 
-  const openPhoto = (part) => {
-    // 直接開啟 Wiki 頁面看照片
-    window.open(getWikiUrl(part), '_blank');
-  };
-
   return (
     <div>
       <div className="page-header">
         <h1>📖 零件圖鑑 ENCYCLOPEDIA</h1>
-        <p>全 {allParts.length} 種零件 — 點擊查看詳細資料與照片 <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>資料更新：{DB_LAST_UPDATED}</span></p>
+        <p>全 {allParts.length} 種零件圖鑑 <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>資料更新：{DB_LAST_UPDATED}</span></p>
       </div>
 
       <div className="search-bar">
@@ -79,16 +81,13 @@ export default function EncyclopediaPage() {
       <div className="parts-grid">
         {filtered.map(p => (
           <div className="part-card" key={p.id} onClick={() => setSelected(p)} style={{ cursor: 'pointer' }}>
-            <span style={{ fontSize: 20 }}>{TYPE_ICONS[p.type] || '⚙️'}</span>
+            <PartImage part={p} size={48} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div className="part-name">{p.name}</div>
               <div className="part-sub">
                 {p.nameCN || p.nameJP || ''} {p.code ? `• ${p.code}` : ''} {p.abbr ? `(${p.abbr})` : ''}
               </div>
             </div>
-            <button onClick={e => { e.stopPropagation(); openPhoto(p); }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, padding: '4px 6px', borderRadius: 6, transition: 'all 0.2s' }}
-              title="查看實物照片">📷</button>
             <span className="tier-badge" style={{
               background: `${TIER_COLORS[p.tier]}22`, color: TIER_COLORS[p.tier],
               border: `1px solid ${TIER_COLORS[p.tier]}44`,
@@ -100,25 +99,24 @@ export default function EncyclopediaPage() {
       {selected && (
         <div className="modal-overlay" onClick={() => setSelected(null)}>
           <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 520 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-              <h2 style={{ margin: 0 }}>{TYPE_ICONS[selected.type] || '⚙️'} {selected.name}</h2>
-              <span className="tier-badge" style={{
-                background: `${TIER_COLORS[selected.tier]}22`, color: TIER_COLORS[selected.tier],
-                border: `1px solid ${TIER_COLORS[selected.tier]}44`, fontSize: 14, padding: '4px 14px',
-              }}>{selected.tier}</span>
+            {/* 大圖 + 標題 */}
+            <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 16 }}>
+              <PartImage part={selected} size={120} />
+              <div>
+                <h2 style={{ margin: 0, marginBottom: 4 }}>{selected.name}</h2>
+                <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 6 }}>{selected.nameCN || selected.nameJP || ''}</div>
+                <span className="tier-badge" style={{
+                  background: `${TIER_COLORS[selected.tier]}22`, color: TIER_COLORS[selected.tier],
+                  border: `1px solid ${TIER_COLORS[selected.tier]}44`, fontSize: 14, padding: '4px 14px',
+                }}>{selected.tier}</span>
+              </div>
             </div>
 
-            {/* 圖片按鈕區 */}
-            <div style={{ marginBottom: 16, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <a href={getWikiUrl(selected)} target="_blank" rel="noopener noreferrer"
-                className="btn btn-accent" style={{ padding: '8px 16px', fontSize: 13, textDecoration: 'none', flex: 1, justifyContent: 'center' }}>
-                <ExternalLink size={16} /> 📷 Wiki 實物照片
-              </a>
-              <a href={getSearchUrl(selected)} target="_blank" rel="noopener noreferrer"
-                className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: 13, textDecoration: 'none', flex: 1, justifyContent: 'center' }}>
-                <ImageIcon size={16} /> 🔍 Google 圖片搜尋
-              </a>
-            </div>
+            {/* Wiki 連結 */}
+            <a href={getWikiUrl(selected)} target="_blank" rel="noopener noreferrer"
+              className="btn btn-accent" style={{ padding: '8px 16px', fontSize: 13, textDecoration: 'none', marginBottom: 16, display: 'inline-flex', width: '100%', justifyContent: 'center' }}>
+              <ExternalLink size={16} /> 📷 查看 Wiki 完整圖庫
+            </a>
 
             {/* 詳細資料 */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 20px', marginBottom: 16 }}>
@@ -130,10 +128,10 @@ export default function EncyclopediaPage() {
               <Detail label="競技等級" value={selected.tier} color={TIER_COLORS[selected.tier]} />
               {selected.abbr && <Detail label="縮寫代碼" value={selected.abbr} />}
               {selected.height != null && <Detail label="軸心高度" value={`${selected.height}mm`} />}
-              {selected.protrusions != null && <Detail label="棘輪突起數" value={selected.protrusions} />}
+              {selected.protrusions != null && <Detail label="棘輪齒數" value={selected.protrusions} />}
             </div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', padding: '8px 0', borderTop: '1px solid var(--border-glass)' }}>
-              零件分類：{selected.partType} | 內部 ID：{selected.id}
+              零件分類：{selected.partType} | ID：{selected.id}
             </div>
           </div>
         </div>
